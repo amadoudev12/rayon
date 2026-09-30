@@ -1,36 +1,47 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Gestion de magasin — SaaS multi-boutiques
 
-## Getting Started
+Application de gestion commerciale (produits, stock, ventes, achats, clients, fournisseurs, dépenses) pour petits commerçants, conçue comme un SaaS multi-tenant : chaque organisation (boutique/enseigne) a ses données strictement isolées.
 
-First, run the development server:
+## Stack
+
+- **Next.js 16** (App Router, Turbopack) — attention : `middleware.ts` est déprécié dans cette version, remplacé par `proxy.ts` (voir `node_modules/next/dist/docs/01-app/01-getting-started/16-proxy.md`).
+- **React 19**, **TypeScript strict**, **Tailwind CSS 4**.
+- **Prisma 7** + adaptateur MariaDB (MySQL).
+- **NextAuth 4** (Credentials + JWT) pour l'authentification.
+- **Zod 4**, **React Hook Form**, **Recharts**.
+
+## Démarrage
 
 ```bash
+npm install
+cp .env.example .env   # renseigner DATABASE_URL et NEXTAUTH_SECRET
+npx prisma migrate dev
+npm run db:seed        # crée un compte de démonstration
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Compte de démonstration créé par le seed (à ne jamais utiliser en production) :
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- Propriétaire : `demo@boutique-diallo.test` / `Demo1234!`
+- Vendeuse : `vendeuse@boutique-diallo.test` / `Demo1234!`
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Scripts
 
-## Learn More
+| Commande | Description |
+| --- | --- |
+| `npm run dev` | Serveur de développement |
+| `npm run build` | Build de production |
+| `npm run lint` | ESLint |
+| `npm run typecheck` | Vérification TypeScript |
+| `npm run db:seed` | Recrée les données de démonstration |
 
-To learn more about Next.js, take a look at the following resources:
+## Architecture
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `prisma/schema.prisma` — schéma multi-tenant : `Organization → Store → Membership (rôle)`, catalogue (`Category`/`Product`), stock (`Stock` + journal `StockMovement`), ventes (`Sale`/`SaleItem`), achats (`Purchase`/`PurchaseItem`), `Customer`, `Supplier`, `Expense`, `AuditLog`.
+- `src/lib/auth` — session NextAuth, résolution du contexte tenant (`requireAuthContext`), permissions par rôle.
+- `src/lib/services` — logique métier transactionnelle (ventes, achats, stock, dashboard), indépendante des routes HTTP.
+- `src/lib/validations` — schémas Zod partagés entre API et formulaires.
+- `src/app/api/**` — Route Handlers : authentification + permission + validation + isolation tenant sur chaque endpoint.
+- `src/app/(auth)`, `src/app/onboarding`, `src/app/(app)` — layouts séparés (connexion, création de boutique, application).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Voir [`AUDIT_ET_RECONCEPTION.md`](./AUDIT_ET_RECONCEPTION.md) pour l'audit initial et [`AMELIORATIONS_ET_TRANSFORMATION.md`](./AMELIORATIONS_ET_TRANSFORMATION.md) pour le détail de la transformation effectuée.
