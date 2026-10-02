@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { containsText } from "@/lib/search";
 import { requirePageAuthContext } from "@/lib/auth/session";
 import { getActiveStoreId } from "@/lib/auth/store";
 import { can } from "@/lib/auth/permissions";
@@ -29,7 +30,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
     ...(categoryId ? { categorieId: categoryId } : {}),
     ...(status === "active" ? { actif: true } : status === "archived" ? { actif: false } : {}),
     ...(search
-      ? { OR: [{ nom: { contains: search } }, { reference: { contains: search } }, { codeBarres: { contains: search } }] }
+      ? { OR: [{ nom: containsText(search) }, { reference: containsText(search) }, { codeBarres: containsText(search) }] }
       : {}),
   };
 

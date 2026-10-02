@@ -1,5 +1,6 @@
 
 import { prisma } from "@/lib/prisma";
+import { containsText } from "@/lib/search";
 import { requirePageAuthContext } from "@/lib/auth/session";
 import { getActiveStoreId } from "@/lib/auth/store";
 import { can } from "@/lib/auth/permissions";
@@ -29,8 +30,8 @@ export default async function SalesPage({ searchParams }: { searchParams: Promis
     ...(search
       ? {
           OR: [
-            { lignes: { some: { produit: { nom: { contains: search } } } } },
-            { client: { nom: { contains: search } } },
+            { lignes: { some: { produit: { nom: containsText(search) } } } },
+            { client: { nom: containsText(search) } },
           ],
         }
       : {}),

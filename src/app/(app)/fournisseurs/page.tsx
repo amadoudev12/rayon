@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { containsText } from "@/lib/search";
 import { requirePageAuthContext, requirePermission } from "@/lib/auth/session";
 import { getPagination, paginationMeta } from "@/lib/api/pagination";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -20,7 +21,7 @@ export default async function SuppliersPage({ searchParams }: { searchParams: Pr
 
   const where = {
     organisationId: context.organizationId,
-    ...(search ? { OR: [{ nom: { contains: search } }, { telephone: { contains: search } }] } : {}),
+    ...(search ? { OR: [{ nom: containsText(search) }, { telephone: containsText(search) }] } : {}),
   };
 
   const [suppliers, total] = await Promise.all([

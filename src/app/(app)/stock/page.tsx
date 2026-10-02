@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { containsText } from "@/lib/search";
 import { requirePageAuthContext } from "@/lib/auth/session";
 import { getActiveStoreId } from "@/lib/auth/store";
 import { can } from "@/lib/auth/permissions";
@@ -29,7 +30,7 @@ export default async function StockPage({ searchParams }: { searchParams: Promis
     produit: {
       organisationId: context.organizationId,
       actif: true,
-      ...(search ? { nom: { contains: search } } : {}),
+      ...(search ? { nom: containsText(search) } : {}),
     },
   };
 

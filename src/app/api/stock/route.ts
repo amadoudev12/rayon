@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { containsText } from "@/lib/search";
 import { requireAuthContext, resolveActiveStoreId } from "@/lib/auth/session";
 import { apiRoute, jsonPage } from "@/lib/api/response";
 import { getPagination, paginationMeta } from "@/lib/api/pagination";
@@ -17,7 +18,7 @@ export const GET = apiRoute(async (request: Request) => {
     produit: {
       organisationId: context.organizationId,
       actif: true,
-      ...(search ? { nom: { contains: search } } : {}),
+      ...(search ? { nom: containsText(search) } : {}),
     },
   };
 

@@ -6,7 +6,7 @@ Application de gestion commerciale (produits, stock, ventes, achats, clients, fo
 
 - **Next.js 16** (App Router, Turbopack) — attention : `middleware.ts` est déprécié dans cette version, remplacé par `proxy.ts` (voir `node_modules/next/dist/docs/01-app/01-getting-started/16-proxy.md`).
 - **React 19**, **TypeScript strict**, **Tailwind CSS 4**.
-- **Prisma 7** + adaptateur MariaDB (MySQL).
+- **Prisma 7** + adaptateur `pg` (PostgreSQL, hébergé sur Supabase).
 - **NextAuth 4** (Credentials + JWT) pour l'authentification.
 - **Zod 4**, **React Hook Form**, **Recharts**.
 
@@ -30,7 +30,7 @@ Compte de démonstration créé par le seed (à ne jamais utiliser en production
 | Commande | Description |
 | --- | --- |
 | `npm run dev` | Serveur de développement |
-| `npm run build` | Build de production |
+| `npm run build` | Génère le client Prisma puis build de production |
 | `npm run lint` | ESLint |
 | `npm run typecheck` | Vérification TypeScript |
 | `npm run db:seed` | Recrée les données de démonstration |

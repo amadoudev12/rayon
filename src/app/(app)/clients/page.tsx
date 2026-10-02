@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { containsText } from "@/lib/search";
 import { requirePageAuthContext } from "@/lib/auth/session";
 import { can } from "@/lib/auth/permissions";
 import { getPagination, paginationMeta } from "@/lib/api/pagination";
@@ -21,7 +22,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
 
   const where = {
     organisationId: context.organizationId,
-    ...(search ? { OR: [{ nom: { contains: search } }, { telephone: { contains: search } }] } : {}),
+    ...(search ? { OR: [{ nom: containsText(search) }, { telephone: containsText(search) }] } : {}),
   };
 
   const [customers, total] = await Promise.all([

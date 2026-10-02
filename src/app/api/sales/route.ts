@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { containsText } from "@/lib/search";
 import { requireAuthContext, requirePermission, resolveActiveStoreId } from "@/lib/auth/session";
 import { saleSchema } from "@/lib/validations/sale";
 import { createSale } from "@/lib/services/sale";
@@ -26,8 +27,8 @@ export const GET = apiRoute(async (request: Request) => {
     ...(search
       ? {
           OR: [
-            { lignes: { some: { produit: { nom: { contains: search } } } } },
-            { client: { nom: { contains: search } } },
+            { lignes: { some: { produit: { nom: containsText(search) } } } },
+            { client: { nom: containsText(search) } },
           ],
         }
       : {}),

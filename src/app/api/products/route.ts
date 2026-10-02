@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { containsText } from "@/lib/search";
 import { requireAuthContext, requirePermission, resolveActiveStoreId } from "@/lib/auth/session";
 import { productSchema } from "@/lib/validations/product";
 import { createProduct } from "@/lib/services/product";
@@ -25,9 +26,9 @@ export const GET = apiRoute(async (request: Request) => {
     ...(search
       ? {
           OR: [
-            { nom: { contains: search } },
-            { reference: { contains: search } },
-            { codeBarres: { contains: search } },
+            { nom: containsText(search) },
+            { reference: containsText(search) },
+            { codeBarres: containsText(search) },
           ],
         }
       : {}),

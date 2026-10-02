@@ -5,17 +5,13 @@ import type { AuthContext } from "@/lib/auth/session";
 /** Vide toutes les tables de la base de test (hors historique des migrations). */
 export async function resetDatabase() {
   const tables = await prisma.$queryRawUnsafe<{ name: string }[]>(
-    "SELECT table_name AS name FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name <> '_prisma_migrations'",
+    "SELECT tablename AS name FROM pg_tables WHERE schemaname = current_schema() AND tablename <> '_prisma_migrations'",
   );
-  // `FOREIGN_KEY_CHECKS` ne vaut que pour une connexion : la transaction
-  // garantit que toutes les instructions passent par la même.
-  await prisma.$transaction(async (tx) => {
-    await tx.$executeRawUnsafe("SET FOREIGN_KEY_CHECKS = 0");
-    for (const { name } of tables) {
-      await tx.$executeRawUnsafe(`TRUNCATE TABLE \`${name}\``);
-    }
-    await tx.$executeRawUnsafe("SET FOREIGN_KEY_CHECKS = 1");
-  });
+  if (tables.length === 0) return;
+  // Une seule instruction pour toutes les tables : `CASCADE` règle les clés
+  // étrangères et `RESTART IDENTITY` remet les compteurs d'identifiants à 1.
+  const names = tables.map(({ name }) => `"${name}"`).join(", ");
+  await prisma.$executeRawUnsafe(`TRUNCATE TABLE ${names} RESTART IDENTITY CASCADE`);
 }
 
 let sequence = 0;

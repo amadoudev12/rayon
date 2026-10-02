@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { containsText } from "@/lib/search";
 import { requireAuthContext, requirePermission } from "@/lib/auth/session";
 import { customerSchema } from "@/lib/validations/customer";
 import { apiRoute, jsonData, jsonPage } from "@/lib/api/response";
@@ -13,7 +14,7 @@ export const GET = apiRoute(async (request: Request) => {
   const where = {
     organisationId: context.organizationId,
     ...(search
-      ? { OR: [{ nom: { contains: search } }, { telephone: { contains: search } }] }
+      ? { OR: [{ nom: containsText(search) }, { telephone: containsText(search) }] }
       : {}),
   };
 
