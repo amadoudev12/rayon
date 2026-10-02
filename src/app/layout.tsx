@@ -9,7 +9,7 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 
 export const metadata: Metadata = {
-  title: "Gestion de magasin",
+  title: "Rayon",
   description: "Solution SaaS moderne de gestion commerciale pour petits commerçants",
 };
 
