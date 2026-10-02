@@ -10,6 +10,9 @@ export default defineConfig({
     seed: "tsx prisma/seed.ts",
   },
   datasource: {
-    url: process.env["DATABASE_URL"],
+    // Les commandes Prisma (migrations) passent par DIRECT_URL quand elle est
+    // définie : sur Vercel, DATABASE_URL pointe vers le pooler en mode
+    // transaction (port 6543), sur lequel les migrations se bloquent.
+    url: process.env["DIRECT_URL"] ?? process.env["DATABASE_URL"],
   },
 });

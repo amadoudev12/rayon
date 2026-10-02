@@ -30,7 +30,9 @@ export default async function globalSetup() {
   }
 
   execSync("npx prisma migrate deploy", {
-    env: { ...process.env, DATABASE_URL: testUrl },
+    // DIRECT_URL est prioritaire dans prisma.config.ts : on la force aussi,
+    // sinon les migrations partiraient sur la vraie base.
+    env: { ...process.env, DATABASE_URL: testUrl, DIRECT_URL: testUrl },
     stdio: "pipe",
   });
 }
