@@ -44,7 +44,10 @@ export function CustomerFormModal({
   // Le modal reste monté dans le tableau : `defaultValues` n'est lu qu'au
   // premier rendu. On recharge donc les valeurs à chaque ouverture.
   useEffect(() => {
-    if (open) reset(toFormValues(customer));
+    // `keepFieldsRef` : sans lui, `reset` oublie les champs déjà montés et,
+    // avec le React Compiler (appels à `register` mémoïsés), ils ne sont jamais
+    // réenregistrés : la saisie était ignorée et le champ jugé vide.
+    if (open) reset(toFormValues(customer), { keepFieldsRef: true });
   }, [open, customer, reset]);
 
   async function onSubmit(data: CustomerFormData) {

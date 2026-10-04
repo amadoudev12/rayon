@@ -44,7 +44,10 @@ export function SupplierFormModal({
   // Le modal reste monté dans le tableau : `defaultValues` n'est lu qu'au
   // premier rendu. On recharge donc les valeurs à chaque ouverture.
   useEffect(() => {
-    if (open) reset(toFormValues(supplier));
+    // `keepFieldsRef` : sans lui, `reset` oublie les champs déjà montés et,
+    // avec le React Compiler (appels à `register` mémoïsés), ils ne sont jamais
+    // réenregistrés : la saisie était ignorée et le champ jugé vide.
+    if (open) reset(toFormValues(supplier), { keepFieldsRef: true });
   }, [open, supplier, reset]);
 
   async function onSubmit(data: SupplierFormData) {
