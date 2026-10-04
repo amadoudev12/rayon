@@ -3,6 +3,7 @@ import type { NextAuthOptions, Session, User as NextAuthUser } from "next-auth";
 import type { JWT } from "next-auth/jwt";
 import { prisma } from "@/lib/prisma";
 import { verifyPassword } from "@/lib/auth/password";
+import { identifierWhere, parseIdentifier } from "@/lib/auth/identifier";
 import type { Role } from "@/generated/prisma/enums";
 
 const authSecret = process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET;
@@ -59,17 +60,21 @@ export const authOptions: NextAuthOptions = {
     CredentialsProvider({
       name: "Credentials",
       credentials: {
-        email: {},
+        identifiant: {},
         motDePasse: {},
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.motDePasse) {
+        if (!credentials?.identifiant || !credentials?.motDePasse) {
           return null;
         }
 
-        const user = await prisma.utilisateur.findUnique({
-          where: { email: credentials.email.trim().toLowerCase() },
-        });
+        // Email ou numéro de téléphone : même normalisation qu'à l'inscription.
+        const identifier = parseIdentifier(credentials.identifiant);
+        if (!identifier) {
+          return null;
+        }
+
+        const user = await prisma.utilisateur.findUnique({ where: identifierWhere(identifier) });
         // Un compte désactivé par le super administrateur ne peut plus se connecter.
         if (!user || !user.actif) {
           return null;

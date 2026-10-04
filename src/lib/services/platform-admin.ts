@@ -4,6 +4,7 @@ import { Role, SaleStatus } from "@/generated/prisma/enums";
 import { Errors } from "@/lib/api/errors";
 import { recordAuditLog } from "@/lib/api/audit";
 import { hashPassword, verifyPassword } from "@/lib/auth/password";
+import { identifierTakenMessage, identifierWhere, parseIdentifier } from "@/lib/auth/identifier";
 import { containsText } from "@/lib/search";
 import { slugify } from "@/lib/slug";
 import { toNumber } from "@/lib/money";
@@ -54,6 +55,7 @@ type OrganizationRow = {
   ownerFirstName: string | null;
   ownerLastName: string | null;
   ownerEmail: string | null;
+  ownerPhone: string | null;
   stores: number;
   members: number;
   products: number;
@@ -81,6 +83,7 @@ export async function listOrganizations(options: {
     conditions.push(Prisma.sql`(
       o."nom" ILIKE ${pattern}
       OR owner."email" ILIKE ${pattern}
+      OR owner."telephone" ILIKE ${pattern}
       OR (owner."prenom" || ' ' || owner."nom") ILIKE ${pattern}
     )`);
   }
@@ -94,7 +97,7 @@ export async function listOrganizations(options: {
   const from = Prisma.sql`
     FROM "Organisation" o
     LEFT JOIN LATERAL (
-      SELECT u."prenom", u."nom", u."email"
+      SELECT u."id", u."prenom", u."nom", u."email", u."telephone"
       FROM "Membre" m JOIN "Utilisateur" u ON u."id" = m."utilisateurId"
       WHERE m."organisationId" = o."id" AND m."role" = 'OWNER'
       ORDER BY m."id" LIMIT 1
@@ -117,7 +120,7 @@ export async function listOrganizations(options: {
     prisma.$queryRaw<OrganizationRow[]>`
       SELECT
         o."id", o."nom", o."devise", o."actif", o."creeLe",
-        owner."prenom" AS "ownerFirstName", owner."nom" AS "ownerLastName", owner."email" AS "ownerEmail",
+        owner."prenom" AS "ownerFirstName", owner."nom" AS "ownerLastName", owner."email" AS "ownerEmail", owner."telephone" AS "ownerPhone",
         (SELECT COUNT(*) FROM "Boutique" b WHERE b."organisationId" = o."id")::int AS "stores",
         (SELECT COUNT(*) FROM "Membre" m WHERE m."organisationId" = o."id")::int AS "members",
         (SELECT COUNT(*) FROM "Produit" p WHERE p."organisationId" = o."id")::int AS "products",
@@ -137,9 +140,15 @@ export async function listOrganizations(options: {
       devise: row.devise,
       actif: row.actif,
       creeLe: row.creeLe,
-      owner: row.ownerEmail
-        ? { prenom: row.ownerFirstName ?? "", nom: row.ownerLastName ?? "", email: row.ownerEmail }
-        : null,
+      owner:
+        row.ownerEmail || row.ownerPhone
+          ? {
+              prenom: row.ownerFirstName ?? "",
+              nom: row.ownerLastName ?? "",
+              email: row.ownerEmail,
+              telephone: row.ownerPhone,
+            }
+          : null,
       stores: row.stores,
       members: row.members,
       products: row.products,
@@ -194,7 +203,16 @@ export async function getOrganizationDetails(organizationId: number) {
           role: true,
           boutique: { select: { nom: true } },
           utilisateur: {
-            select: { id: true, prenom: true, nom: true, email: true, actif: true, derniereActiviteLe: true, creeLe: true },
+            select: {
+              id: true,
+              prenom: true,
+              nom: true,
+              email: true,
+              telephone: true,
+              actif: true,
+              derniereActiviteLe: true,
+              creeLe: true,
+            },
           },
         },
       },
@@ -344,19 +362,20 @@ export async function getOrganizationDetails(organizationId: number) {
 
 /**
  * Crée une organisation, son premier point de vente et le compte de son
- * propriétaire en une seule transaction. Aucun email n'est envoyé : le super
+ * propriétaire en une seule transaction. Aucun message n'est envoyé : le super
  * administrateur communique lui-même le mot de passe temporaire.
  */
 export async function createOrganizationWithOwner(adminId: number, input: AdminCreateOrganizationData) {
-  const email = input.email.trim().toLowerCase();
-  const existing = await prisma.utilisateur.findUnique({ where: { email }, select: { id: true } });
-  if (existing) throw Errors.conflict("Un compte existe déjà avec cet email.");
+  const identifier = parseIdentifier(input.identifiant);
+  if (!identifier) throw Errors.conflict("Identifiant de connexion invalide.");
+  const existing = await prisma.utilisateur.findUnique({ where: identifierWhere(identifier), select: { id: true } });
+  if (existing) throw Errors.conflict(identifierTakenMessage(identifier));
 
   const motDePasseHash = await hashPassword(input.motDePasse);
 
   const organization = await prisma.$transaction(async (tx) => {
     const owner = await tx.utilisateur.create({
-      data: { prenom: input.prenom, nom: input.nom, email, motDePasseHash },
+      data: { prenom: input.prenom, nom: input.nom, ...identifierWhere(identifier), motDePasseHash },
     });
     const created = await tx.organisation.create({
       data: { nom: input.nomOrganisation, slug: slugify(input.nomOrganisation), devise: input.devise },
@@ -441,6 +460,7 @@ export async function listUsers(options: {
         { prenom: text },
         { nom: text },
         { email: text },
+        { telephone: text },
         { membre: { organisation: { nom: text } } },
       ],
     });
@@ -474,6 +494,7 @@ export async function listUsers(options: {
         prenom: true,
         nom: true,
         email: true,
+        telephone: true,
         superAdmin: true,
         actif: true,
         creeLe: true,
@@ -497,6 +518,7 @@ export async function listUsers(options: {
       prenom: user.prenom,
       nom: user.nom,
       email: user.email,
+      telephone: user.telephone,
       superAdmin: user.superAdmin,
       actif: user.actif,
       creeLe: user.creeLe,
@@ -565,7 +587,7 @@ export async function updateSuperAdminProfile(adminId: number, input: AdminProfi
   return prisma.utilisateur.update({
     where: { id: adminId },
     data,
-    select: { id: true, prenom: true, nom: true, email: true },
+    select: { id: true, prenom: true, nom: true, email: true, telephone: true },
   });
 }
 

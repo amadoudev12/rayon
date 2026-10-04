@@ -8,6 +8,7 @@ import { SortableTh } from "@/components/admin/SortableTh";
 import { OrganizationStatusBadge } from "@/components/admin/parts";
 import { OrganizationStatusButton } from "@/components/admin/StatusActions";
 import { formatDate, formatMoney, formatNumber } from "@/lib/format";
+import { userContact } from "@/lib/auth/identifier";
 import type { OrganizationStatus } from "@/lib/services/platform";
 
 export type OrganizationRow = {
@@ -16,7 +17,7 @@ export type OrganizationRow = {
   devise: string;
   actif: boolean;
   creeLe: Date;
-  owner: { prenom: string; nom: string; email: string } | null;
+  owner: { prenom: string; nom: string; email: string | null; telephone: string | null } | null;
   stores: number;
   products: number;
   sales: number;
@@ -90,7 +91,7 @@ export function OrganizationsTable({ organizations, filtered }: { organizations:
                     <p className="max-w-48 truncate text-slate-900">
                       {organization.owner.prenom} {organization.owner.nom}
                     </p>
-                    <p className="max-w-48 truncate text-xs text-slate-500">{organization.owner.email}</p>
+                    <p className="max-w-48 truncate text-xs text-slate-500">{userContact(organization.owner)}</p>
                   </>
                 ) : (
                   <span className="text-slate-400">Aucun propriétaire</span>

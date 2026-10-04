@@ -4,6 +4,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Card } from "@/components/ui/Card";
 import { Icon } from "@/components/ui/Icon";
 import { formatDate, initials } from "@/lib/format";
+import { userContact } from "@/lib/auth/identifier";
 import { ProfileForm } from "./ProfileForm";
 
 export default async function AdminProfilePage() {
@@ -12,12 +13,12 @@ export default async function AdminProfilePage() {
   const [user, superAdmins] = await Promise.all([
     prisma.utilisateur.findUniqueOrThrow({
       where: { id: admin.userId },
-      select: { prenom: true, nom: true, email: true, creeLe: true },
+      select: { prenom: true, nom: true, email: true, telephone: true, creeLe: true },
     }),
     prisma.utilisateur.findMany({
       where: { superAdmin: true },
       orderBy: { creeLe: "asc" },
-      select: { id: true, prenom: true, nom: true, email: true, actif: true },
+      select: { id: true, prenom: true, nom: true, email: true, telephone: true, actif: true },
     }),
   ]);
 
@@ -32,7 +33,7 @@ export default async function AdminProfilePage() {
             <p className="mt-1 text-[13px] text-slate-500">Votre nom tel qu&apos;il apparaît dans le journal d&apos;activité, et votre mot de passe.</p>
           </div>
           <Card className="overflow-hidden lg:col-span-2">
-            <ProfileForm user={{ prenom: user.prenom, nom: user.nom, email: user.email }} />
+            <ProfileForm user={{ prenom: user.prenom, nom: user.nom, identifiant: userContact(user) }} />
           </Card>
         </section>
 
@@ -56,7 +57,7 @@ export default async function AdminProfilePage() {
                       {account.prenom} {account.nom}
                       {account.id === admin.userId && <span className="ml-2 text-xs font-normal text-slate-400">vous</span>}
                     </p>
-                    <p className="truncate text-xs text-slate-500">{account.email}</p>
+                    <p className="truncate text-xs text-slate-500">{userContact(account)}</p>
                   </div>
                   <span className="inline-flex items-center gap-1 rounded-md bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand-700 ring-1 ring-inset ring-brand-200/70">
                     <Icon name="shield" className="h-3 w-3" />

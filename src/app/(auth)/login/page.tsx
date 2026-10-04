@@ -27,7 +27,7 @@ export default function LoginPage() {
     const result = await signIn("credentials", { ...data, redirect: false });
 
     if (result?.error) {
-      setServerError("Email ou mot de passe incorrect.");
+      setServerError("Identifiant ou mot de passe incorrect.");
       return;
     }
 
@@ -41,8 +41,8 @@ export default function LoginPage() {
       <p className="mt-1 text-sm text-slate-500">Accédez à votre espace de gestion.</p>
 
       <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-4">
-        <FormField label="Email" htmlFor="email" error={errors.email?.message}>
-          <input id="email" type="email" autoComplete="email" className={inputClass} {...register("email")} />
+        <FormField label="Email ou téléphone" htmlFor="identifiant" error={errors.identifiant?.message}>
+          <input id="identifiant" type="text" autoComplete="username" className={inputClass} {...register("identifiant")} />
         </FormField>
         <FormField label="Mot de passe" htmlFor="motDePasse" error={errors.motDePasse?.message}>
           <PasswordInput

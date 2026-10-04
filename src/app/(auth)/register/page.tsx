@@ -38,7 +38,7 @@ export default function RegisterPage() {
     }
 
     const result = await signIn("credentials", {
-      email: data.email,
+      identifiant: data.identifiant,
       motDePasse: data.motDePasse,
       redirect: false,
     });
@@ -67,8 +67,13 @@ export default function RegisterPage() {
             <input id="nom" className={inputClass} {...register("nom")} />
           </FormField>
         </div>
-        <FormField label="Email" htmlFor="email" error={errors.email?.message}>
-          <input id="email" type="email" autoComplete="email" className={inputClass} {...register("email")} />
+        <FormField
+          label="Email ou téléphone"
+          htmlFor="identifiant"
+          error={errors.identifiant?.message}
+          hint="Il servira à vous connecter. Pour un numéro, indiquez l'indicatif : +221 77 123 45 67."
+        >
+          <input id="identifiant" type="text" autoComplete="username" className={inputClass} {...register("identifiant")} />
         </FormField>
         <FormField
           label="Mot de passe"

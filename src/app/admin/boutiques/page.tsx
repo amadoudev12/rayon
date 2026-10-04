@@ -38,7 +38,7 @@ export default async function AdminOrganizationsPage({ searchParams }: { searchP
 
       <Card>
         <div className="flex flex-col gap-3 border-b border-slate-100 p-4 sm:flex-row sm:items-center">
-          <SearchInput placeholder="Rechercher une boutique, un propriétaire, un email…" />
+          <SearchInput placeholder="Rechercher une boutique, un propriétaire, un email, un téléphone…" />
           <SelectFilter paramName="status" options={STATUS_OPTIONS} placeholder="Tous les statuts" />
         </div>
 

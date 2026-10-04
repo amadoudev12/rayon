@@ -379,7 +379,7 @@ describe("gestion des boutiques et des utilisateurs", () => {
 
     const search = await listOrganizations({ search: "bêta", pagination: page });
     expect(search.items.map((item) => item.nom)).toEqual(["Bêta Shop"]);
-    const byOwner = await listOrganizations({ search: a.owner.utilisateur.email, pagination: page });
+    const byOwner = await listOrganizations({ search: a.owner.utilisateur.email!, pagination: page });
     expect(byOwner.items.map((item) => item.nom)).toEqual(["Alpha Market"]);
     // Les caractères joker ne sont pas interprétés.
     expect((await listOrganizations({ search: "%", pagination: page })).total).toBe(0);
@@ -421,7 +421,7 @@ describe("gestion des boutiques et des utilisateurs", () => {
       devise: "GNF",
       prenom: "Awa",
       nom: "Barry",
-      email: "Awa@Test.Local",
+      identifiant: "Awa@Test.Local",
       motDePasse: "Secret123",
     };
 
@@ -439,10 +439,10 @@ describe("gestion des boutiques et des utilisateurs", () => {
     expect(owner.membre?.organisation.boutiques).toMatchObject([{ nom: "Marché central", parDefaut: true }]);
 
     expect((await postOrganization(json(body, "POST"))).status).toBe(409);
-    expect((await postOrganization(json({ ...body, email: "autre@test.local", motDePasse: "court" }, "POST"))).status).toBe(400);
+    expect((await postOrganization(json({ ...body, identifiant: "autre@test.local", motDePasse: "court" }, "POST"))).status).toBe(400);
     expect(await prisma.organisation.count()).toBe(1);
     await expect(
-      createOrganizationWithOwner(admin.id, { ...body, devise: "GNF", email: "awa@test.local" }),
+      createOrganizationWithOwner(admin.id, { ...body, devise: "GNF", identifiant: "awa@test.local" }),
     ).rejects.toMatchObject({ status: 409 });
   });
 

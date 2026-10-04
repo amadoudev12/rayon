@@ -21,11 +21,12 @@ import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { FormField, inputClass, selectClass } from "@/components/ui/FormField";
 import { useToast } from "@/components/ui/ToastProvider";
 import { initials } from "@/lib/format";
+import { userContact } from "@/lib/auth/identifier";
 
 type Member = {
   id: number;
   role: Role;
-  utilisateur: { id: number; prenom: string; nom: string; email: string };
+  utilisateur: { id: number; prenom: string; nom: string; email: string | null; telephone: string | null };
   boutique: { id: number; nom: string } | null;
 };
 
@@ -95,7 +96,7 @@ export function TeamSection({
                 </span>
                 {member.utilisateur.id === currentUserId && <Badge>Vous</Badge>}
               </p>
-              <p className="truncate text-xs text-slate-500">{member.utilisateur.email}</p>
+              <p className="truncate text-xs text-slate-500">{userContact(member.utilisateur)}</p>
             </div>
             <div className="flex items-center gap-2 pl-12 sm:pl-0">
               {member.boutique && (
@@ -130,7 +131,7 @@ export function TeamSection({
       <Modal open={open} onClose={() => setOpen(false)} title="Ajouter un membre de l'équipe" size="lg">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <Alert tone="warning">
-            Aucun email n&apos;est envoyé automatiquement : communiquez ce mot de passe temporaire vous-même.
+            Aucun message n&apos;est envoyé automatiquement : communiquez ce mot de passe temporaire vous-même.
           </Alert>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <FormField label="Prénom" htmlFor="memberFirstName" error={errors.prenom?.message}>
@@ -140,8 +141,13 @@ export function TeamSection({
               <input id="memberLastName" className={inputClass} {...register("nom")} />
             </FormField>
           </div>
-          <FormField label="Email" htmlFor="memberEmail" error={errors.email?.message}>
-            <input id="memberEmail" type="email" className={inputClass} {...register("email")} />
+          <FormField
+            label="Email ou téléphone"
+            htmlFor="memberIdentifier"
+            error={errors.identifiant?.message}
+            hint="Son identifiant de connexion. Pour un numéro, indiquez l'indicatif : +221 77 123 45 67."
+          >
+            <input id="memberIdentifier" type="text" autoComplete="off" className={inputClass} {...register("identifiant")} />
           </FormField>
           <FormField label="Mot de passe temporaire" htmlFor="memberPassword" error={errors.motDePasse?.message}>
             <input id="memberPassword" type="text" className={inputClass} {...register("motDePasse")} />

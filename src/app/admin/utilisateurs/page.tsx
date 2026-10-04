@@ -38,7 +38,7 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: P
 
       <Card>
         <div className="flex flex-col gap-3 border-b border-slate-100 p-4 sm:flex-row sm:items-center">
-          <SearchInput placeholder="Rechercher un nom, un email, une boutique…" />
+          <SearchInput placeholder="Rechercher un nom, un email, un téléphone, une boutique…" />
           <SelectFilter paramName="role" options={ROLE_OPTIONS} placeholder="Tous les rôles" />
           <SelectFilter paramName="status" options={STATUS_OPTIONS} placeholder="Tous les statuts" />
         </div>
@@ -50,6 +50,7 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: P
             prenom: item.prenom,
             nom: item.nom,
             email: item.email,
+            telephone: item.telephone,
             superAdmin: item.superAdmin,
             actif: item.actif,
             creeLe: item.creeLe,

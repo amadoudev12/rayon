@@ -80,7 +80,7 @@ const FEATURES = [
 const STEPS = [
   {
     title: "Créez votre compte",
-    text: "Prénom, nom, email et mot de passe : c'est tout ce qu'il faut pour ouvrir votre espace.",
+    text: "Prénom, nom, mot de passe et un email ou un numéro de téléphone : c'est tout ce qu'il faut pour ouvrir votre espace.",
   },
   {
     title: "Configurez votre boutique",

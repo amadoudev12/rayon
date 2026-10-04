@@ -7,12 +7,14 @@ import { Badge } from "@/components/ui/Badge";
 import { SortableTh } from "@/components/admin/SortableTh";
 import { UserStatusButton } from "@/components/admin/StatusActions";
 import { formatDate, initials } from "@/lib/format";
+import { userContact } from "@/lib/auth/identifier";
 
 export type UserRow = {
   id: number;
   prenom: string;
   nom: string;
-  email: string;
+  email: string | null;
+  telephone: string | null;
   superAdmin: boolean;
   actif: boolean;
   creeLe: Date;
@@ -69,7 +71,7 @@ export function UsersTable({ users, filtered }: { users: UserRow[]; filtered: bo
                     <p className="max-w-52 truncate font-medium text-slate-900">
                       {user.prenom} {user.nom}
                     </p>
-                    <p className="max-w-52 truncate text-xs text-slate-500">{user.email}</p>
+                    <p className="max-w-52 truncate text-xs text-slate-500">{userContact(user)}</p>
                   </div>
                 </div>
               </Td>

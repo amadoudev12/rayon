@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { identifierSchema } from "@/lib/validations/auth";
 
 const passwordRule = z
   .string()
@@ -13,7 +14,7 @@ export const adminCreateOrganizationSchema = z.object({
   devise: z.enum(["XOF", "XAF", "EUR", "USD", "MAD", "GNF", "CDF"]).default("XOF"),
   prenom: z.string().trim().min(2, "Le prénom est requis."),
   nom: z.string().trim().min(2, "Le nom est requis."),
-  email: z.string().trim().min(1, "L'email est requis.").email("Adresse email invalide."),
+  identifiant: identifierSchema,
   motDePasse: passwordRule,
 });
 

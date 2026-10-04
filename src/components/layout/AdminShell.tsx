@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { ADMIN_NAV_ITEMS, ADMIN_NAV_SECTIONS, isAdminNavActive } from "./admin-navigation";
 import { Icon } from "@/components/ui/Icon";
 import { initials } from "@/lib/format";
+import { userContact } from "@/lib/auth/identifier";
 
 /** Point d'attention affiché dans la cloche (calculé côté serveur). */
 type ShellAlert = { key: string; tone: "warning" | "danger" | "neutral"; title: string; description: string; href: string };
@@ -24,7 +25,7 @@ export function AdminShell({
   alerts,
 }: {
   children: React.ReactNode;
-  user: { prenom: string; nom: string; email: string };
+  user: { prenom: string; nom: string; email: string | null; telephone: string | null };
   alerts: ShellAlert[];
 }) {
   const pathname = usePathname();
@@ -180,7 +181,7 @@ export function AdminShell({
                         <p className="truncate text-sm font-medium text-slate-900">
                           {user.prenom} {user.nom}
                         </p>
-                        <p className="truncate text-xs text-slate-500">{user.email}</p>
+                        <p className="truncate text-xs text-slate-500">{userContact(user)}</p>
                       </div>
                     </div>
                     <div className="px-2.5 pb-2">

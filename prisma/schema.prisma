@@ -57,7 +57,11 @@ model Utilisateur {
   id             Int      @id @default(autoincrement())
   prenom         String
   nom            String
-  email          String   @unique
+  /// Identifiants de connexion : email ou téléphone, au moins l'un des deux
+  /// (contrainte CHECK en base). Le téléphone est stocké au format
+  /// international normalisé, ex : +221771234567 (voir lib/auth/identifier).
+  email          String?  @unique
+  telephone      String?  @unique
   motDePasseHash String
 
   /// Gestionnaire de la plateforme SaaS. Rôle global, distinct du rôle

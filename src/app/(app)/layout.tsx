@@ -18,7 +18,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     }),
     prisma.utilisateur.findUniqueOrThrow({
       where: { id: context.userId },
-      select: { prenom: true, nom: true, email: true },
+      select: { prenom: true, nom: true, email: true, telephone: true },
     }),
   ]);
 

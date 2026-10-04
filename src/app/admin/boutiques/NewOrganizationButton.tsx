@@ -125,8 +125,8 @@ export function NewOrganizationButton({ defaultOpen = false }: { defaultOpen?: b
             </FormField>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <FormField label="Email" htmlFor="ownerEmail" error={errors.email?.message}>
-              <input id="ownerEmail" type="email" autoComplete="off" className={inputClass} {...register("email")} />
+            <FormField label="Email ou téléphone" htmlFor="ownerIdentifier" error={errors.identifiant?.message}>
+              <input id="ownerIdentifier" type="text" autoComplete="off" className={inputClass} {...register("identifiant")} />
             </FormField>
             <FormField label="Mot de passe temporaire" htmlFor="ownerPassword" error={errors.motDePasse?.message}>
               <input id="ownerPassword" type="text" autoComplete="off" className={inputClass} {...register("motDePasse")} />
@@ -134,7 +134,8 @@ export function NewOrganizationButton({ defaultOpen = false }: { defaultOpen?: b
           </div>
 
           <Alert tone="warning">
-            Aucun email n&apos;est envoyé automatiquement : communiquez vous-même ces identifiants au propriétaire.
+            Aucun message n&apos;est envoyé automatiquement : communiquez vous-même ces identifiants au propriétaire. Un numéro
+            de téléphone doit comporter l&apos;indicatif du pays (ex : +221 77 123 45 67).
           </Alert>
           {serverError && <Alert>{serverError}</Alert>}
 

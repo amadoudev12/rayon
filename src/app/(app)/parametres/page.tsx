@@ -39,7 +39,7 @@ export default async function SettingsPage() {
     prisma.membre.findMany({
       where: { organisationId: context.organizationId },
       include: {
-        utilisateur: { select: { id: true, prenom: true, nom: true, email: true } },
+        utilisateur: { select: { id: true, prenom: true, nom: true, email: true, telephone: true } },
         boutique: { select: { id: true, nom: true } },
       },
       orderBy: { creeLe: "asc" },

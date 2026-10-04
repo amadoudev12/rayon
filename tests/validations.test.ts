@@ -2,7 +2,8 @@ import { describe, expect, it } from "vitest";
 import { saleSchema } from "@/lib/validations/sale";
 import { purchaseSchema } from "@/lib/validations/purchase";
 import { productSchema, stockAdjustmentSchema } from "@/lib/validations/product";
-import { registerSchema } from "@/lib/validations/auth";
+import { loginSchema, registerSchema } from "@/lib/validations/auth";
+import { parseIdentifier } from "@/lib/auth/identifier";
 
 // Ces schémas ne touchent pas la base : ce sont les règles de saisie
 // appliquées par les API avant tout traitement.
@@ -37,9 +38,25 @@ describe("validations des données envoyées aux API", () => {
   });
 
   it("inscription : exige un mot de passe d'au moins 8 caractères avec lettre et chiffre", () => {
-    const base = { prenom: "Awa", nom: "Diallo", email: "awa@test.local" };
+    const base = { prenom: "Awa", nom: "Diallo", identifiant: "awa@test.local" };
     expect(registerSchema.safeParse({ ...base, motDePasse: "court1" }).success).toBe(false);
     expect(registerSchema.safeParse({ ...base, motDePasse: "sanschiffre" }).success).toBe(false);
     expect(registerSchema.safeParse({ ...base, motDePasse: "Solide123" }).success).toBe(true);
+  });
+  it("identifiant : accepte un email ou un téléphone avec indicatif, et les normalise", () => {
+    expect(parseIdentifier(" Awa@Test.Local ")).toEqual({ kind: "email", email: "awa@test.local" });
+    // Espaces, points, tirets et préfixe 00 : un seul et même numéro stocké.
+    expect(parseIdentifier("+221 77 123 45 67")).toEqual({ kind: "telephone", telephone: "+221771234567" });
+    expect(parseIdentifier("00221-77.123.45.67")).toEqual({ kind: "telephone", telephone: "+221771234567" });
+    // Sans indicatif, le pays est inconnu : refusé plutôt que deviné.
+    expect(parseIdentifier("77 123 45 67")).toBeNull();
+    expect(parseIdentifier("awa@")).toBeNull();
+    expect(parseIdentifier("")).toBeNull();
+
+    expect(loginSchema.safeParse({ identifiant: "+221771234567", motDePasse: "x" }).success).toBe(true);
+    expect(loginSchema.safeParse({ identifiant: "771234567", motDePasse: "x" }).success).toBe(false);
+    const base = { prenom: "Awa", nom: "Diallo", motDePasse: "Solide123" };
+    expect(registerSchema.safeParse({ ...base, identifiant: "+221 77 123 45 67" }).success).toBe(true);
+    expect(registerSchema.safeParse({ ...base, identifiant: "pas un identifiant" }).success).toBe(false);
   });
 });

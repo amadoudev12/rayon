@@ -10,6 +10,7 @@ import { ROLE_LABELS } from "@/lib/auth/permissions";
 import { Icon } from "@/components/ui/Icon";
 import { Spinner } from "@/components/ui/Button";
 import { initials } from "@/lib/format";
+import { userContact } from "@/lib/auth/identifier";
 import type { Role } from "@/generated/prisma/enums";
 
 type Store = { id: number; nom: string };
@@ -23,7 +24,7 @@ export function AppShell({
   activeStoreId,
 }: {
   children: React.ReactNode;
-  user: { prenom: string; nom: string; email: string };
+  user: { prenom: string; nom: string; email: string | null; telephone: string | null };
   organization: { nom: string; devise: string };
   role: Role;
   stores: Store[];
@@ -183,7 +184,7 @@ export function AppShell({
                         <p className="truncate text-sm font-medium text-slate-900">
                           {user.prenom} {user.nom}
                         </p>
-                        <p className="truncate text-xs text-slate-500">{user.email}</p>
+                        <p className="truncate text-xs text-slate-500">{userContact(user)}</p>
                       </div>
                     </div>
                     <div className="px-2.5 pb-2">

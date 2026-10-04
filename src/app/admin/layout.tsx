@@ -15,7 +15,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const [user, alerts] = await Promise.all([
     prisma.utilisateur.findUniqueOrThrow({
       where: { id: admin.userId },
-      select: { prenom: true, nom: true, email: true },
+      select: { prenom: true, nom: true, email: true, telephone: true },
     }),
     getPlatformAlerts(),
   ]);

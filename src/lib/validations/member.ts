@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { Role } from "@/generated/prisma/enums";
+import { identifierSchema } from "@/lib/validations/auth";
 
 // Le rôle OWNER est attribué uniquement à la création de l'organisation, jamais via ce formulaire.
 export const ASSIGNABLE_ROLES = [Role.ADMIN, Role.MANAGER, Role.SELLER, Role.STOCK_MANAGER] as const;
@@ -7,7 +8,7 @@ export const ASSIGNABLE_ROLES = [Role.ADMIN, Role.MANAGER, Role.SELLER, Role.STO
 export const createMemberSchema = z.object({
   prenom: z.string().trim().min(2, "Le prénom est requis."),
   nom: z.string().trim().min(2, "Le nom est requis."),
-  email: z.string().trim().min(1, "L'email est requis.").email("Adresse email invalide."),
+  identifiant: identifierSchema,
   motDePasse: z
     .string()
     .min(8, "Le mot de passe doit contenir au moins 8 caractères.")

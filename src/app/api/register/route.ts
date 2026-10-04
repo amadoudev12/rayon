@@ -3,14 +3,16 @@ import { hashPassword } from "@/lib/auth/password";
 import { registerSchema } from "@/lib/validations/auth";
 import { apiRoute, jsonData } from "@/lib/api/response";
 import { Errors } from "@/lib/api/errors";
+import { identifierTakenMessage, identifierWhere, parseIdentifier } from "@/lib/auth/identifier";
 
 export const POST = apiRoute(async (request: Request) => {
   const parsed = registerSchema.parse(await request.json());
-  const email = parsed.email.trim().toLowerCase();
+  // Le schéma a déjà validé le format : l'identifiant est forcément reconnu.
+  const identifier = parseIdentifier(parsed.identifiant)!;
 
-  const existing = await prisma.utilisateur.findUnique({ where: { email } });
+  const existing = await prisma.utilisateur.findUnique({ where: identifierWhere(identifier) });
   if (existing) {
-    throw Errors.conflict("Un compte existe déjà avec cet email.");
+    throw Errors.conflict(identifierTakenMessage(identifier));
   }
 
   const motDePasseHash = await hashPassword(parsed.motDePasse);
@@ -18,10 +20,10 @@ export const POST = apiRoute(async (request: Request) => {
     data: {
       prenom: parsed.prenom,
       nom: parsed.nom,
-      email,
+      ...identifierWhere(identifier),
       motDePasseHash,
     },
-    select: { id: true, prenom: true, nom: true, email: true },
+    select: { id: true, prenom: true, nom: true, email: true, telephone: true },
   });
 
   return jsonData(user, { status: 201 });

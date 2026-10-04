@@ -14,6 +14,7 @@ import { RevenueTrendChart } from "@/components/dashboard/RevenueTrendChart";
 import { ActivityList, OrganizationStatusBadge } from "@/components/admin/parts";
 import { OrganizationStatusButton } from "@/components/admin/StatusActions";
 import { formatDate, formatDateTime, formatMoney, formatNumber, formatRelative, initials } from "@/lib/format";
+import { userContact } from "@/lib/auth/identifier";
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -122,6 +123,7 @@ export default async function AdminOrganizationPage({ params }: { params: Promis
               {organization.owner ? `${organization.owner.prenom} ${organization.owner.nom}` : "Aucun"}
             </Field>
             <Field label="Email">{organization.owner?.email ?? "—"}</Field>
+            <Field label="Téléphone">{organization.owner?.telephone ?? "—"}</Field>
             <Field label="Devise">{currency}</Field>
             <Field label="Identifiant">{organization.slug}</Field>
             <Field label="Fournisseurs">{formatNumber(counts.suppliers)}</Field>
@@ -154,7 +156,7 @@ export default async function AdminOrganizationPage({ params }: { params: Promis
                       )}
                     </p>
                     <p className="truncate text-xs text-slate-500">
-                      {member.user.email}
+                      {userContact(member.user)}
                       {member.storeName ? ` · ${member.storeName}` : ""}
                     </p>
                   </div>

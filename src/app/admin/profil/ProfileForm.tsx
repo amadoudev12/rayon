@@ -11,7 +11,7 @@ import { FormField, inputClass } from "@/components/ui/FormField";
 import { PasswordInput } from "@/components/ui/PasswordInput";
 import { useToast } from "@/components/ui/ToastProvider";
 
-export function ProfileForm({ user }: { user: { prenom: string; nom: string; email: string } }) {
+export function ProfileForm({ user }: { user: { prenom: string; nom: string; identifiant: string } }) {
   const router = useRouter();
   const { push } = useToast();
   const [serverError, setServerError] = useState<string | null>(null);
@@ -54,8 +54,8 @@ export function ProfileForm({ user }: { user: { prenom: string; nom: string; ema
             <input id="profileLastName" className={inputClass} {...register("nom")} />
           </FormField>
         </div>
-        <FormField label="Email" htmlFor="profileEmail" hint="L'email de connexion ne se modifie pas ici.">
-          <input id="profileEmail" className={inputClass} value={user.email} disabled readOnly />
+        <FormField label="Identifiant de connexion" htmlFor="profileIdentifier" hint="L'identifiant de connexion ne se modifie pas ici.">
+          <input id="profileIdentifier" className={inputClass} value={user.identifiant} disabled readOnly />
         </FormField>
 
         <div className="border-t border-slate-100 pt-4">
