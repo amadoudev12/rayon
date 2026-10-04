@@ -10,6 +10,7 @@ import { registerSchema, type RegisterFormData } from "@/lib/validations/auth";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { FormField, inputClass } from "@/components/ui/FormField";
+import { PasswordInput } from "@/components/ui/PasswordInput";
 import { Alert } from "@/components/ui/Alert";
 
 export default function RegisterPage() {
@@ -75,11 +76,9 @@ export default function RegisterPage() {
           error={errors.motDePasse?.message}
           hint="8 caractères minimum, avec au moins une lettre et un chiffre."
         >
-          <input
+          <PasswordInput
             id="motDePasse"
-            type="password"
             autoComplete="new-password"
-            className={inputClass}
             {...register("motDePasse")}
           />
         </FormField>

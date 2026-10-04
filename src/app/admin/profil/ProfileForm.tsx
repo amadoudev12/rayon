@@ -8,6 +8,7 @@ import { adminProfileSchema, type AdminProfileData } from "@/lib/validations/adm
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { FormField, inputClass } from "@/components/ui/FormField";
+import { PasswordInput } from "@/components/ui/PasswordInput";
 import { useToast } from "@/components/ui/ToastProvider";
 
 export function ProfileForm({ user }: { user: { prenom: string; nom: string; email: string } }) {
@@ -63,11 +64,9 @@ export function ProfileForm({ user }: { user: { prenom: string; nom: string; ema
         </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <FormField label="Mot de passe actuel" htmlFor="profileCurrentPassword" error={errors.motDePasseActuel?.message}>
-            <input
+            <PasswordInput
               id="profileCurrentPassword"
-              type="password"
               autoComplete="current-password"
-              className={inputClass}
               {...register("motDePasseActuel")}
             />
           </FormField>
@@ -77,11 +76,9 @@ export function ProfileForm({ user }: { user: { prenom: string; nom: string; ema
             error={errors.nouveauMotDePasse?.message}
             hint="8 caractères minimum, avec une lettre et un chiffre."
           >
-            <input
+            <PasswordInput
               id="profileNewPassword"
-              type="password"
               autoComplete="new-password"
-              className={inputClass}
               {...register("nouveauMotDePasse")}
             />
           </FormField>

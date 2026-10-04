@@ -10,6 +10,7 @@ import { loginSchema, type LoginFormData } from "@/lib/validations/auth";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { FormField, inputClass } from "@/components/ui/FormField";
+import { PasswordInput } from "@/components/ui/PasswordInput";
 import { Alert } from "@/components/ui/Alert";
 
 export default function LoginPage() {
@@ -44,11 +45,9 @@ export default function LoginPage() {
           <input id="email" type="email" autoComplete="email" className={inputClass} {...register("email")} />
         </FormField>
         <FormField label="Mot de passe" htmlFor="motDePasse" error={errors.motDePasse?.message}>
-          <input
+          <PasswordInput
             id="motDePasse"
-            type="password"
             autoComplete="current-password"
-            className={inputClass}
             {...register("motDePasse")}
           />
         </FormField>
