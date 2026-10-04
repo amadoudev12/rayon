@@ -72,7 +72,6 @@ export function ProductsTable({
               <Tr key={product.id} onClick={() => setViewing(product)}>
                 <Td>
                   <p className="font-medium text-slate-900">{product.nom}</p>
-                  {product.reference && <p className="mt-0.5 font-mono text-[11px] text-slate-400">SKU {product.reference}</p>}
                 </Td>
                 <Td>{categories.find((c) => c.id === product.categorieId)?.nom ?? "—"}</Td>
                 <Td className="tabular text-right font-medium text-slate-900">{formatMoney(Number(product.prixVente), currency)}</Td>

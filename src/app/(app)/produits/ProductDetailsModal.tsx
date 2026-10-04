@@ -98,8 +98,6 @@ export function ProductDetailsModal({
           </Badge>
         </div>
 
-        {product.description && <p className="text-sm text-slate-600">{product.description}</p>}
-
         <dl className="tabular grid grid-cols-2 gap-4 rounded-lg bg-slate-50 p-4 ring-1 ring-inset ring-slate-200/70 sm:grid-cols-4">
           <Field label="Prix d'achat">{formatMoney(prixAchat, currency)}</Field>
           <Field label="Prix de vente">{formatMoney(prixVente, currency)}</Field>
@@ -117,8 +115,6 @@ export function ProductDetailsModal({
         </dl>
 
         <dl className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-          <Field label="SKU">{product.reference || "—"}</Field>
-          <Field label="Code-barres">{product.codeBarres || "—"}</Field>
           <Field label="Unité">{product.unite}</Field>
         </dl>
 

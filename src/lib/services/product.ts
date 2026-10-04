@@ -91,9 +91,10 @@ export async function updateProduct(
     where: { id: productId, organisationId: organizationId },
     data: {
       nom: data.nom,
-      description: data.description || null,
-      reference: data.reference || null,
-      codeBarres: data.codeBarres || null,
+      // Champs absents du formulaire : laissés tels quels s'ils ne sont pas envoyés.
+      description: data.description === undefined ? undefined : data.description || null,
+      reference: data.reference === undefined ? undefined : data.reference || null,
+      codeBarres: data.codeBarres === undefined ? undefined : data.codeBarres || null,
       unite: data.unite,
       categorieId: data.categorieId ?? null,
       prixAchat: data.prixAchat,

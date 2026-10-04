@@ -14,9 +14,6 @@ type Category = { id: number; nom: string };
 export type ProductRow = {
   id: number;
   nom: string;
-  description: string | null;
-  reference: string | null;
-  codeBarres: string | null;
   unite: string;
   categorieId: number | null;
   prixAchat: number | string;
@@ -31,9 +28,6 @@ function toFormValues(product?: ProductRow | null): ProductFormInput {
   if (!product) {
     return {
       nom: "",
-      description: "",
-      reference: "",
-      codeBarres: "",
       unite: "unité",
       categorieId: null,
       prixAchat: undefined,
@@ -45,9 +39,6 @@ function toFormValues(product?: ProductRow | null): ProductFormInput {
   }
   return {
     nom: product.nom,
-    description: product.description ?? "",
-    reference: product.reference ?? "",
-    codeBarres: product.codeBarres ?? "",
     unite: product.unite,
     categorieId: product.categorieId,
     prixAchat: Number(product.prixAchat),
@@ -147,19 +138,6 @@ export function ProductFormModal({
         <FormField label="Nom du produit" htmlFor="nom" error={errors.nom?.message}>
           <input id="nom" className={inputClass} {...register("nom")} />
         </FormField>
-
-        <FormField label="Description (optionnel)" htmlFor="description">
-          <textarea id="description" rows={2} className={inputClass} {...register("description")} />
-        </FormField>
-
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <FormField label="SKU (optionnel)" htmlFor="reference">
-            <input id="reference" className={inputClass} {...register("reference")} />
-          </FormField>
-          <FormField label="Code-barres (optionnel)" htmlFor="codeBarres">
-            <input id="codeBarres" className={inputClass} {...register("codeBarres")} />
-          </FormField>
-        </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <FormField label="Prix d'achat" htmlFor="prixAchat" error={errors.prixAchat?.message}>

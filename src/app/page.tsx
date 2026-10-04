@@ -43,7 +43,7 @@ const FEATURES = [
   {
     icon: "box",
     title: "Produits",
-    text: "Un catalogue avec catégories, prix d'achat et de vente, unité, SKU et code-barres. Un produit peut être archivé sans être supprimé.",
+    text: "Un catalogue avec catégories, prix d'achat et de vente, unité et seuil d'alerte. Un produit peut être archivé sans être supprimé.",
   },
   {
     icon: "layers",

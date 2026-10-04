@@ -66,7 +66,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
 
       <Card>
         <div className="flex flex-col gap-3 border-b border-slate-100 p-4 sm:flex-row sm:items-center sm:justify-between">
-          <SearchInput placeholder="Rechercher un produit, SKU, code-barres…" />
+          <SearchInput placeholder="Rechercher un produit…" />
           <div className="flex gap-2">
             <SelectFilter
               paramName="categoryId"
