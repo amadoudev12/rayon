@@ -24,6 +24,12 @@ export type AuthContext = {
  */
 export const SESSION_EXPIRED_PATH = "/api/session/expired";
 
+/** Accueil de l'espace d'administration de la plateforme. */
+export const SUPER_ADMIN_HOME = "/admin";
+
+/** Page affichée aux membres d'une organisation suspendue. */
+export const SUSPENDED_PATH = "/suspendu";
+
 /** Returns the raw session, or null when the request is unauthenticated. */
 export async function getSession() {
   return getServerSession(authOptions);
@@ -35,11 +41,39 @@ export async function getSession() {
  * Mis en cache pour la durée d'une requête (layout + page = une seule lecture).
  */
 const loadAccount = cache(async (userId: number) => {
-  return prisma.utilisateur.findUnique({
+  const account = await prisma.utilisateur.findUnique({
     where: { id: userId },
-    select: { membre: { select: { role: true, organisationId: true, boutiqueId: true } } },
+    select: {
+      superAdmin: true,
+      actif: true,
+      derniereActiviteLe: true,
+      membre: {
+        select: { role: true, organisationId: true, boutiqueId: true, organisation: { select: { actif: true } } },
+      },
+    },
   });
+
+  if (account?.actif) await touchLastActivity(userId, account.derniereActiviteLe);
+  return account;
 });
+
+/** Écart minimal entre deux mises à jour de `derniereActiviteLe`. */
+const ACTIVITY_TOUCH_INTERVAL_MS = 15 * 60 * 1000;
+
+/**
+ * Note la dernière activité du compte (statistiques de la plateforme), au
+ * plus une écriture toutes les 15 minutes. Purement informatif : un échec
+ * ne doit jamais faire échouer la requête en cours.
+ */
+async function touchLastActivity(userId: number, lastActivity: Date | null) {
+  const now = Date.now();
+  if (lastActivity && now - lastActivity.getTime() < ACTIVITY_TOUCH_INTERVAL_MS) return;
+  try {
+    await prisma.utilisateur.updateMany({ where: { id: userId }, data: { derniereActiviteLe: new Date(now) } });
+  } catch (error) {
+    console.error("Échec de la mise à jour de la dernière activité", error);
+  }
+}
 
 type AccountState =
   | { status: "anonymous" }
@@ -47,6 +81,10 @@ type AccountState =
   | { status: "revoked" }
   /** Compte valide qui n'a pas encore créé son organisation. */
   | { status: "onboarding"; userId: number }
+  /** Gestionnaire de la plateforme : aucun espace boutique, uniquement /admin. */
+  | { status: "superadmin"; userId: number }
+  /** Membre d'une organisation suspendue par le super administrateur. */
+  | { status: "suspended" }
   | { status: "member"; context: AuthContext };
 
 async function resolveAccount(): Promise<AccountState> {
@@ -55,13 +93,20 @@ async function resolveAccount(): Promise<AccountState> {
   if (!userId) return { status: "anonymous" };
 
   const account = await loadAccount(userId);
-  if (!account) return { status: "revoked" };
+  // Compte supprimé, ou désactivé par le super administrateur.
+  if (!account || !account.actif) return { status: "revoked" };
+
+  // Vérifié avant l'adhésion : un super administrateur n'obtient jamais de
+  // contexte d'organisation, même si une adhésion existait par erreur.
+  if (account.superAdmin) return { status: "superadmin", userId };
 
   if (!account.membre) {
     // Le jeton indique une organisation que la base ne connaît plus : le
     // membre a été retiré. Sinon, l'inscription n'est simplement pas terminée.
     return session.user.tenant ? { status: "revoked" } : { status: "onboarding", userId };
   }
+
+  if (!account.membre.organisation.actif) return { status: "suspended" };
 
   return {
     status: "member",
@@ -84,9 +129,12 @@ export async function getAuthenticatedUserId(): Promise<number | null> {
 
 /** Throws 401 if the request has no valid session (or the account no longer exists). */
 export async function requireUserId(): Promise<number> {
-  const userId = await getAuthenticatedUserId();
-  if (!userId) throw Errors.unauthenticated();
-  return userId;
+  const state = await resolveAccount();
+  if (state.status === "member") return state.context.userId;
+  if (state.status === "onboarding") return state.userId;
+  if (state.status === "superadmin") throw Errors.platformAccountOnly();
+  if (state.status === "suspended") throw Errors.organizationSuspended();
+  throw Errors.unauthenticated();
 }
 
 /**
@@ -99,6 +147,8 @@ export async function requireAuthContext(): Promise<AuthContext> {
   if (state.status === "anonymous") throw Errors.unauthenticated();
   if (state.status === "revoked") throw Errors.accessRevoked();
   if (state.status === "onboarding") throw Errors.onboardingRequired();
+  if (state.status === "superadmin") throw Errors.platformAccountOnly();
+  if (state.status === "suspended") throw Errors.organizationSuspended();
   return state.context;
 }
 
@@ -115,7 +165,55 @@ export async function requirePageAuthContext(): Promise<AuthContext> {
   // l'ancien jeton) renverrait en boucle vers le tableau de bord.
   if (state.status === "revoked") redirect(SESSION_EXPIRED_PATH);
   if (state.status === "onboarding") redirect("/onboarding");
+  if (state.status === "superadmin") redirect(SUPER_ADMIN_HOME);
+  if (state.status === "suspended") redirect(SUSPENDED_PATH);
   return state.context;
+}
+
+/** Destination naturelle d'un compte selon son état réel (jamais selon le jeton). */
+function homeFor(state: AccountState): string {
+  switch (state.status) {
+    case "anonymous":
+      return "/login";
+    case "revoked":
+      return SESSION_EXPIRED_PATH;
+    case "onboarding":
+      return "/onboarding";
+    case "superadmin":
+      return SUPER_ADMIN_HOME;
+    case "suspended":
+      return SUSPENDED_PATH;
+    case "member":
+      return "/dashboard";
+  }
+}
+
+/**
+ * Réservé aux routes API de la plateforme (/api/admin/**) : 401 sans session
+ * valide, 403 pour tout compte qui n'est pas super administrateur — y compris
+ * le propriétaire d'une boutique. Le statut est relu en base à chaque requête.
+ */
+export async function requireSuperAdmin(): Promise<{ userId: number }> {
+  const state = await resolveAccount();
+  if (state.status === "anonymous" || state.status === "revoked") throw Errors.unauthenticated();
+  if (state.status !== "superadmin") throw Errors.forbidden("Accès réservé à l'administration de la plateforme");
+  return { userId: state.userId };
+}
+
+/** Même règle que `requireSuperAdmin`, pour les pages : redirige au lieu de lever. */
+export async function requirePageSuperAdmin(): Promise<{ userId: number }> {
+  const state = await resolveAccount();
+  if (state.status !== "superadmin") redirect(homeFor(state));
+  return { userId: state.userId };
+}
+
+/**
+ * Pour la page « organisation suspendue » : null si l'utilisateur doit bien
+ * la voir, sinon la destination vers laquelle le rediriger.
+ */
+export async function getSuspendedRedirect(): Promise<string | null> {
+  const state = await resolveAccount();
+  return state.status === "suspended" ? null : homeFor(state);
 }
 
 /**
@@ -124,10 +222,7 @@ export async function requirePageAuthContext(): Promise<AuthContext> {
  */
 export async function getOnboardingRedirect(): Promise<string | null> {
   const state = await resolveAccount();
-  if (state.status === "anonymous") return "/login";
-  if (state.status === "revoked") return SESSION_EXPIRED_PATH;
-  if (state.status === "member") return "/dashboard";
-  return null;
+  return state.status === "onboarding" ? null : homeFor(state);
 }
 
 /** Throws 403 unless the context's role holds the given permission. */

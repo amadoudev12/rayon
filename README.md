@@ -25,6 +25,16 @@ Compte de démonstration créé par le seed (à ne jamais utiliser en production
 - Propriétaire : `demo@boutique-diallo.test` / `Demo1234!`
 - Vendeuse : `vendeuse@boutique-diallo.test` / `Demo1234!`
 
+## Espace Super Administrateur
+
+Le gestionnaire de la plateforme dispose d'un espace séparé, `/admin` (vue d'ensemble, boutiques, utilisateurs, activité, statistiques). Ce rôle (`Utilisateur.superAdmin`) est global et distinct des rôles d'une boutique : un super administrateur n'a pas d'organisation et n'accède pas à l'espace commerçant, et inversement.
+
+Le rôle ne s'attribue qu'en ligne de commande, jamais depuis l'interface :
+
+```bash
+SUPER_ADMIN_EMAIL="moi@exemple.com" SUPER_ADMIN_PASSWORD="MotDePasse123" npm run admin:create
+```
+
 ## Scripts
 
 | Commande | Description |
@@ -34,6 +44,7 @@ Compte de démonstration créé par le seed (à ne jamais utiliser en production
 | `npm run lint` | ESLint |
 | `npm run typecheck` | Vérification TypeScript |
 | `npm run db:seed` | Recrée les données de démonstration |
+| `npm run admin:create` | Crée ou promeut un super administrateur (voir ci-dessus) |
 
 ## Architecture
 

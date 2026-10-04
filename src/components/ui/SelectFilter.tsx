@@ -21,6 +21,7 @@ export function SelectFilter({
     if (next) params.set(paramName, next);
     else params.delete(paramName);
     params.delete("page");
+    params.delete("before");
     router.push(`${pathname}?${params.toString()}`);
   }
 

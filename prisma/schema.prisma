@@ -60,6 +60,15 @@ model Utilisateur {
   email          String   @unique
   motDePasseHash String
 
+  /// Gestionnaire de la plateforme SaaS. Rôle global, distinct du rôle
+  /// d'un membre dans une organisation : un super administrateur n'a jamais
+  /// d'adhésion (`Membre`) et n'accède qu'à l'espace /admin.
+  superAdmin         Boolean   @default(false)
+  /// Compte désactivé par le super administrateur : connexion refusée.
+  actif              Boolean   @default(true)
+  /// Dernière requête authentifiée (mise à jour au plus toutes les 15 minutes).
+  derniereActiviteLe DateTime?
+
   membre          Membre?
   journauxAudit   JournalAudit[]
   ventes          Vente[]          @relation("VenteVendeur")
@@ -78,6 +87,9 @@ model Organisation {
   nom       String
   slug      String   @unique
   devise    String   @default("XOF")
+  /// Faux quand le super administrateur a suspendu l'organisation : ses
+  /// membres ne peuvent plus utiliser l'application (données conservées).
+  actif     Boolean  @default(true)
 
   membres       Membre[]
   boutiques     Boutique[]
@@ -311,6 +323,8 @@ model Vente {
 
   @@index([organisationId, boutiqueId, creeLe])
   @@index([clientId])
+  // Statistiques de la plateforme (toutes organisations confondues).
+  @@index([creeLe])
 }
 
 model LigneVente {
@@ -417,4 +431,5 @@ model JournalAudit {
   creeLe         DateTime @default(now())
 
   @@index([organisationId, creeLe])
+  @@index([creeLe])
 }

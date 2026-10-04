@@ -14,5 +14,6 @@ declare module "next-auth/jwt" {
   interface JWT {
     id?: number;
     tenant?: SessionTenant;
+    superAdmin?: boolean;
   }
 }

@@ -43,6 +43,11 @@ export async function proxy(request: NextRequest) {
 
   const isAuthenticated = Boolean(token);
   const isOnboarded = Boolean(token?.tenant);
+  // Indication tirée du jeton, utilisée uniquement pour orienter les
+  // redirections : l'espace /admin et les API /api/admin revérifient le
+  // statut de super administrateur en base à chaque requête.
+  const isSuperAdmin = Boolean(token?.superAdmin);
+  const isAdminPath = pathname === "/admin" || pathname.startsWith("/admin/");
   const isPublicPath = PUBLIC_PATHS.some((path) => pathname === path || pathname.startsWith(path));
   const isOnboardingPath = pathname === "/onboarding";
   const isAuthPage = pathname === "/login" || pathname === "/register";
@@ -54,8 +59,19 @@ export async function proxy(request: NextRequest) {
   } else if (!isAuthenticated && !isPublicPath && pathname.startsWith("/api")) {
     response = NextResponse.next(); // let the route handler return a clean 401 JSON body
   } else if (isAuthenticated && isAuthPage) {
-    response = NextResponse.redirect(new URL(isOnboarded ? "/dashboard" : "/onboarding", request.url));
-  } else if (isAuthenticated && !isOnboarded && !isOnboardingPath && !pathname.startsWith("/api")) {
+    const home = isSuperAdmin ? "/admin" : isOnboarded ? "/dashboard" : "/onboarding";
+    response = NextResponse.redirect(new URL(home, request.url));
+  } else if (
+    isAuthenticated &&
+    !isOnboarded &&
+    // Un super administrateur n'a pas d'organisation : ce n'est pas un
+    // onboarding inachevé. Les pages /admin décident elles-mêmes (le jeton
+    // peut être antérieur à la promotion du compte).
+    !isSuperAdmin &&
+    !isAdminPath &&
+    !isOnboardingPath &&
+    !pathname.startsWith("/api")
+  ) {
     response = NextResponse.redirect(new URL("/onboarding", request.url));
   } else if (isAuthenticated && isOnboarded && isOnboardingPath) {
     response = NextResponse.redirect(new URL("/dashboard", request.url));

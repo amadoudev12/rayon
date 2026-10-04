@@ -41,6 +41,11 @@ async function loadMembership(userId: number) {
   } satisfies NonNullable<SessionTenant>;
 }
 
+async function loadIsSuperAdmin(userId: number) {
+  const user = await prisma.utilisateur.findUnique({ where: { id: userId }, select: { superAdmin: true } });
+  return user?.superAdmin ?? false;
+}
+
 export const authOptions: NextAuthOptions = {
   session: {
     strategy: "jwt",
@@ -65,7 +70,8 @@ export const authOptions: NextAuthOptions = {
         const user = await prisma.utilisateur.findUnique({
           where: { email: credentials.email.trim().toLowerCase() },
         });
-        if (!user) {
+        // Un compte désactivé par le super administrateur ne peut plus se connecter.
+        if (!user || !user.actif) {
           return null;
         }
 
@@ -93,6 +99,9 @@ export const authOptions: NextAuthOptions = {
       // le client le demande explicitement (par ex. juste après l'onboarding).
       if (user || trigger === "update" || token.tenant === undefined) {
         token.tenant = token.id ? await loadMembership(token.id as number) : null;
+        // Simple indication pour les redirections du Proxy : l'autorisation
+        // réelle relit toujours `superAdmin` en base (lib/auth/session).
+        token.superAdmin = token.id ? await loadIsSuperAdmin(token.id as number) : false;
       }
 
       return token;
