@@ -150,7 +150,7 @@ export default function HomePage() {
           />
           <div
             aria-hidden
-            className="pointer-events-none absolute left-1/2 top-0 h-80 w-[52rem] max-w-full -translate-x-1/2 rounded-full bg-brand-200/40 blur-3xl"
+            className="pointer-events-none absolute left-1/2 top-0 h-80 w-208 max-w-full -translate-x-1/2 rounded-full bg-brand-200/40 blur-3xl"
           />
 
           <div className="relative mx-auto max-w-6xl">
@@ -350,7 +350,7 @@ export default function HomePage() {
             />
             <div
               aria-hidden
-              className="pointer-events-none absolute -top-24 left-1/2 h-64 w-[40rem] max-w-full -translate-x-1/2 rounded-full bg-brand-500/30 blur-3xl"
+              className="pointer-events-none absolute -top-24 left-1/2 h-64 w-106 max-w-full -translate-x-1/2 rounded-full bg-brand-500/30 blur-3xl"
             />
             <div className="relative mx-auto max-w-2xl">
               <h2 className="text-balance text-3xl font-semibold tracking-tight text-white sm:text-4xl">
