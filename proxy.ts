@@ -51,14 +51,17 @@ export async function proxy(request: NextRequest) {
   const isPublicPath = PUBLIC_PATHS.some((path) => pathname === path || pathname.startsWith(path));
   const isOnboardingPath = pathname === "/onboarding";
   const isAuthPage = pathname === "/login" || pathname === "/register";
+  // Public landing page: visitors see it, signed-in users are sent straight
+  // to their own space (same destination as from /login).
+  const isLandingPage = pathname === "/";
 
   let response: NextResponse;
 
-  if (!isAuthenticated && !isPublicPath && !pathname.startsWith("/api")) {
+  if (!isAuthenticated && !isPublicPath && !isLandingPage && !pathname.startsWith("/api")) {
     response = NextResponse.redirect(new URL("/login", request.url));
   } else if (!isAuthenticated && !isPublicPath && pathname.startsWith("/api")) {
     response = NextResponse.next(); // let the route handler return a clean 401 JSON body
-  } else if (isAuthenticated && isAuthPage) {
+  } else if (isAuthenticated && (isAuthPage || isLandingPage)) {
     const home = isSuperAdmin ? "/admin" : isOnboarded ? "/dashboard" : "/onboarding";
     response = NextResponse.redirect(new URL(home, request.url));
   } else if (

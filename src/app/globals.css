@@ -158,6 +158,36 @@
   border-radius: 9999px;
 }
 
+/* Page d'accueil : défilement doux vers les ancres, uniquement sur cette page. */
+html:has(.landing) {
+  scroll-behavior: smooth;
+}
+
+/* Page d'accueil : apparition douce des blocs à l'entrée dans l'écran. Pilotée
+   par le défilement en CSS pur ; sans prise en charge du navigateur (ou si
+   l'utilisateur préfère réduire les animations), les blocs sont simplement
+   affichés. */
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal {
+      animation: reveal linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 40%;
+    }
+  }
+}
+
 /* Chiffres alignés dans les montants et les tableaux. */
 .tabular {
   font-variant-numeric: tabular-nums;
