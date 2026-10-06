@@ -2,6 +2,7 @@ import { cache } from "react";
 import { getServerSession } from "next-auth/next";
 import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth/authOptions";
+import { getBearerSession } from "@/lib/auth/mobile-token";
 import { prisma } from "@/lib/prisma";
 import { Errors } from "@/lib/api/errors";
 import { can, type Permission } from "@/lib/auth/permissions";
@@ -30,9 +31,12 @@ export const SUPER_ADMIN_HOME = "/admin";
 /** Page affichée aux membres d'une organisation suspendue. */
 export const SUSPENDED_PATH = "/suspendu";
 
-/** Returns the raw session, or null when the request is unauthenticated. */
+/**
+ * Returns the raw session, or null when the request is unauthenticated.
+ * The web sends it as the NextAuth cookie, the mobile app as a Bearer token.
+ */
 export async function getSession() {
-  return getServerSession(authOptions);
+  return (await getServerSession(authOptions)) ?? (await getBearerSession());
 }
 
 /**

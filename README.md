@@ -35,6 +35,21 @@ Le rôle ne s'attribue qu'en ligne de commande, jamais depuis l'interface :
 SUPER_ADMIN_EMAIL="moi@exemple.com" SUPER_ADMIN_PASSWORD="MotDePasse123" npm run admin:create
 ```
 
+## Application mobile
+
+Le dossier [`mobile/`](./mobile) contient l'application React Native (Expo) : un projet séparé, avec ses propres dépendances, qui utilise la même API, la même base et les mêmes règles métier que le web. Voir [`mobile/README.md`](./mobile/README.md).
+
+```bash
+npm run dev                          # backend, à la racine
+cd mobile && npm install && npx expo start
+```
+
+Côté backend, le mobile s'appuie sur :
+
+- `POST /api/mobile/auth/login` — connexion par jeton (`src/lib/auth/mobile-token.ts`), mêmes identifiants et mêmes règles que le web (`src/lib/auth/credentials.ts`) ;
+- `GET /api/me` — profil, organisation, boutiques accessibles et permissions du compte connecté ;
+- toutes les autres routes `/api/**`, qui acceptent indifféremment le cookie de session (web) ou l'en-tête `Authorization: Bearer` (mobile).
+
 ## Scripts
 
 | Commande | Description |

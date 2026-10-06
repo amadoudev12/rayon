@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { containsText } from "@/lib/search";
 import { requireAuthContext, requirePermission, resolveActiveStoreId } from "@/lib/auth/session";
+import { getActiveStoreId } from "@/lib/auth/store";
 import { productSchema } from "@/lib/validations/product";
 import { createProduct } from "@/lib/services/product";
 import { apiRoute, jsonData, jsonPage } from "@/lib/api/response";
@@ -61,7 +62,12 @@ export const POST = apiRoute(async (request: Request) => {
   requirePermission(context, "product:manage");
 
   const parsed = productSchema.parse(await request.json());
-  const storeId = await resolveActiveStoreId(context);
+  // Le stock initial va dans la boutique demandée explicitement (mobile),
+  // sinon dans la boutique active de l'utilisateur (sélecteur du web).
+  const requestedStoreId = Number(new URL(request.url).searchParams.get("storeId")) || undefined;
+  const storeId = requestedStoreId
+    ? await resolveActiveStoreId(context, requestedStoreId)
+    : await getActiveStoreId(context);
   const product = await createProduct(context, storeId, parsed);
 
   return jsonData(product, { status: 201 });

@@ -2,11 +2,10 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import type { NextAuthOptions, Session, User as NextAuthUser } from "next-auth";
 import type { JWT } from "next-auth/jwt";
 import { prisma } from "@/lib/prisma";
-import { verifyPassword } from "@/lib/auth/password";
-import { identifierWhere, parseIdentifier } from "@/lib/auth/identifier";
+import { verifyCredentials } from "@/lib/auth/credentials";
 import type { Role } from "@/generated/prisma/enums";
 
-const authSecret = process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET;
+export const authSecret = process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET;
 
 if (!authSecret && process.env.NODE_ENV === "production") {
   throw new Error(
@@ -22,7 +21,7 @@ export type SessionTenant = {
   storeId: number | null;
 } | null;
 
-async function loadMembership(userId: number) {
+export async function loadMembership(userId: number) {
   const membership = await prisma.membre.findUnique({
     where: { utilisateurId: userId },
     select: {
@@ -42,7 +41,7 @@ async function loadMembership(userId: number) {
   } satisfies NonNullable<SessionTenant>;
 }
 
-async function loadIsSuperAdmin(userId: number) {
+export async function loadIsSuperAdmin(userId: number) {
   const user = await prisma.utilisateur.findUnique({ where: { id: userId }, select: { superAdmin: true } });
   return user?.superAdmin ?? false;
 }
@@ -64,26 +63,10 @@ export const authOptions: NextAuthOptions = {
         motDePasse: {},
       },
       async authorize(credentials) {
-        if (!credentials?.identifiant || !credentials?.motDePasse) {
-          return null;
-        }
+        if (!credentials) return null;
 
-        // Email ou numéro de téléphone : même normalisation qu'à l'inscription.
-        const identifier = parseIdentifier(credentials.identifiant);
-        if (!identifier) {
-          return null;
-        }
-
-        const user = await prisma.utilisateur.findUnique({ where: identifierWhere(identifier) });
-        // Un compte désactivé par le super administrateur ne peut plus se connecter.
-        if (!user || !user.actif) {
-          return null;
-        }
-
-        const isValid = await verifyPassword(credentials.motDePasse, user.motDePasseHash);
-        if (!isValid) {
-          return null;
-        }
+        const user = await verifyCredentials(credentials.identifiant, credentials.motDePasse);
+        if (!user) return null;
 
         return {
           id: String(user.id),
