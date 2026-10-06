@@ -1,12 +1,15 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRef, useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Linking, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { API_URL, ApiError, errorMessage } from '@/api/client';
 import { useSession } from '@/auth/SessionProvider';
 import { Banner, Button, Card, Field, Input } from '@/components/ui';
 import { colors, font, radius, spacing, TOUCH_TARGET } from '@/lib/theme';
+
+/** L'application web est servie par le même serveur que l'API. */
+const WEB_APP_URL = API_URL || 'https://rayon-two.vercel.app';
 
 export default function LoginScreen() {
   const insets = useSafeAreaInsets();
@@ -50,7 +53,7 @@ export default function LoginScreen() {
           <View style={styles.logo}>
             <Ionicons name="storefront" size={26} color="#ffffff" />
           </View>
-          <Text style={styles.appName}>Gestion Magasin</Text>
+          <Text style={styles.appName}>Rayon</Text>
           <Text style={styles.tagline}>Votre boutique, dans votre poche.</Text>
         </View>
 
@@ -111,6 +114,12 @@ export default function LoginScreen() {
         <Text style={styles.footnote}>
           La création de compte et l&apos;inscription d&apos;une boutique se font sur l&apos;application web.
         </Text>
+        <Pressable
+          accessibilityRole="link"
+          onPress={() => void Linking.openURL(WEB_APP_URL).catch(() => setError("Impossible d'ouvrir le site."))}
+          style={styles.link}>
+          <Text style={styles.linkLabel}>Créer un compte sur le site</Text>
+        </Pressable>
         {__DEV__ && <Text style={styles.server}>Serveur : {API_URL || 'non configuré'}</Text>}
       </ScrollView>
     </KeyboardAvoidingView>
@@ -145,5 +154,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   footnote: { fontSize: font.xs, color: colors.textMuted, textAlign: 'center', lineHeight: 17 },
+  link: { minHeight: TOUCH_TARGET, alignSelf: 'center', justifyContent: 'center', paddingHorizontal: spacing.lg, marginTop: -spacing.lg },
+  linkLabel: { fontSize: font.sm, fontWeight: '600', color: colors.brand600 },
   server: { fontSize: 11, color: colors.textFaint, textAlign: 'center' },
 });

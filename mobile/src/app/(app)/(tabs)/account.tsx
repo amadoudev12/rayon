@@ -90,7 +90,7 @@ export default function AccountScreen() {
         <Button label="Se déconnecter" icon="log-out-outline" variant="secondary" onPress={confirmSignOut} style={{ marginTop: spacing.xxl }} />
 
         <Text style={styles.version}>
-          Gestion Magasin {Constants.expoConfig?.version ?? ''}
+          Rayon {Constants.expoConfig?.version ?? ''}
           {__DEV__ ? `\n${API_URL}` : ''}
         </Text>
       </ScrollView>
